@@ -137,6 +137,21 @@ manage_auditd() {
 			sudo apt-get install -y audispd-plugins >/dev/null 2>&1 || true
 		fi
 		
+		# Ensure Log Directory Exists
+		if [[ ! -d /var/log/audit ]]; then
+			log_info "Creating audit log directory..."
+			sudo mkdir -p /var/log/audit
+			sudo chmod 0700 /var/log/audit
+		fi
+		
+		# Configure auditd.conf to ensure logs are written
+		if [[ -f /etc/audit/auditd.conf ]]; then
+			log_info "Ensuring auditd.conf is configured for logging..."
+			sudo sed -i 's/^write_logs.*/write_logs = yes/' /etc/audit/auditd.conf
+			sudo sed -i 's/^log_format.*/log_format = RAW/' /etc/audit/auditd.conf
+			sudo sed -i 's/^log_group.*/log_group = root/' /etc/audit/auditd.conf
+		fi
+
 		log_info "Configuring persistent audit rules..."
 		local rules_file="/etc/audit/rules.d/hardening.rules"
 		sudo mkdir -p /etc/audit/rules.d
