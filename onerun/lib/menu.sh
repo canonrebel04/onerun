@@ -41,6 +41,7 @@ security_tools_menu() {
 			"System Auditing (Auditd)" \
 			"USB Device Control (USBGuard)" \
 			"Application Confinement (AppArmor)" \
+			"Compliance & Benchmarks (CIS)" \
 			"Back"; do
 			
 			case ${opt} in
@@ -70,6 +71,10 @@ security_tools_menu() {
 				;;
 			"Application Confinement (AppArmor)")
 				manage_apparmor
+				break
+				;;
+			"Compliance & Benchmarks (CIS)")
+				manage_compliance
 				break
 				;;
 			"Back")

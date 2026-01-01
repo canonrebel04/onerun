@@ -2,7 +2,7 @@
 
 **OneRun** is a production-ready, interactive Bash script designed to harden Linux systems (Arch, Debian/Ubuntu, Centos/RHEL) rapidly and securely.
 
-Current Version: **v0.4 "Sentinel"**
+Current Version: **v0.6 "Compliance"**
 
 ## Features
 
@@ -20,6 +20,8 @@ Automated installation and configuration of best-in-class security tools:
 - **Deep Audit (Lynis)**: Performs a comprehensive system security audit (CIS compliance checks).
 - **System Auditing (Auditd)** (v0.4): Kernel-level event monitoring with persistent rules for `execve`, `/etc/passwd`, and network changes.
 - **USB Device Control (USBGuard)** (v0.4): Prevents BadUSB attacks by whitelisting only currently connected devices.
+- **Application Confinement (AppArmor)** (v0.5): Automated installation and profile management. Includes GRUB configuration logic for LSM activation.
+- **Compliance & Benchmarks (CIS)** (v0.6): Automated remediation for Level 1 CIS Benchmarks (Unused filesystems, Network sysctl, File permissions).
 
 ### ⚙️ Core Hardening
 - **Network Stack Hardening (Sysctl)**:
@@ -27,12 +29,14 @@ Automated installation and configuration of best-in-class security tools:
     - Prevents Man-in-the-Middle (MITM) redirection attacks.
     - Disables IP forwarding (unless router).
     - **Advanced Kernel Protection** (v0.4): Enables ASLR, restricts kernel pointers, and limits `ptrace` scope.
+    - **CIS Compliant Parameters** (v0.6): Enhanced network hardening for ICMP, martians, and router ads.
 - **Secure SSH Configuration**:
     - Updates `sshd_config` to best practices.
     - **Enforced**: Key-only authentication, Root login disabled, Empty passwords disabled.
     - **Safety**: Checks for authorized keys before applying to prevent lockout.
 - **User Management**: Finds users with empty passwords, locks accounts, and forces password changes.
 - **File System**: Scans for dangerous SUID binaries.
+- **CIS Filesystem Module Hardening** (v0.6): Disables `cramfs`, `hfs`, `jffs2`, etc.
 
 ## Usage
 
@@ -60,6 +64,5 @@ sudo ./onerun.sh --auto --preset hardened
 - `--force`: Bypasses safety prompts (Use with caution).
 
 ## Roadmap
-- **v0.4 "Sentinel"** (Current): Auditd, USBGuard, Extended Kernel Hardening.
-- **v0.5**: AppArmor/SELinux Confinement.
-- **v0.6**: Automated CIS Compliance Reporting.
+- **v0.6 "Compliance"** (Current): CIS Benchmarks, AppArmor Confinement, Auditd, USBGuard.
+- **v0.7**: Systemd Sandboxing & FIM (Wazuh).

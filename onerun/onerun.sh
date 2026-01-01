@@ -28,6 +28,7 @@ source ./lib/backup.sh
 source ./lib/menu.sh
 source ./lib/tools.sh
 source ./lib/mac.sh
+source ./lib/compliance.sh
 
 # Argument Parsing
 auto_mode=0
