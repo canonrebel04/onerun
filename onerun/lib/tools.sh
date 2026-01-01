@@ -180,12 +180,17 @@ manage_auditd() {
 -a always,exit -F arch=b64 -S sethostname -S setdomainname -k network_modifications
 EOF
 		
-		# auditd often refuses manual restart (RefuseManualStop=yes on Arch/Systemd)
+		# logic to handle auditd state on Arch/Systemd safely
 		if command -v systemctl &>/dev/null; then
 			sudo systemctl enable auditd
-			# Try reload, but don't fail if it refuses or isn't running
-			log_info "Reloading auditd configuration..."
-			sudo systemctl reload auditd 2>/dev/null || log_warn "Auditd reload failed (expected if service is immutable). Rules will be loaded via augenrules."
+			
+			if sudo systemctl is-active auditd >/dev/null 2>&1; then
+				log_info "Reloading auditd configuration..."
+				sudo systemctl reload auditd 2>/dev/null || log_warn "Reload failed. This is common if the service is immutable. Rules are loaded via kernel."
+			else
+				log_info "Starting auditd service..."
+				sudo systemctl start auditd 2>/dev/null || log_warn "Start failed. A reboot may be required to activate the audit subsystem."
+			fi
 		else
 			sudo service auditd reload || sudo service auditd start || true
 		fi
