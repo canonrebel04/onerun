@@ -38,6 +38,8 @@ security_tools_menu() {
 			"Intrusion Prevention (Fail2Ban)" \
 			"Rootkit Scan (RKHunter)" \
 			"Deep Audit (Lynis)" \
+			"System Auditing (Auditd)" \
+			"USB Device Control (USBGuard)" \
 			"Back"; do
 			
 			case ${opt} in
@@ -55,6 +57,14 @@ security_tools_menu() {
 				;;
 			"Deep Audit (Lynis)")
 				run_lynis
+				break
+				;;
+			"System Auditing (Auditd)")
+				manage_auditd
+				break
+				;;
+			"USB Device Control (USBGuard)")
+				manage_usbguard
 				break
 				;;
 			"Back")

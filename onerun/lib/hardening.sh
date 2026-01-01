@@ -138,8 +138,24 @@ net.ipv4.ip_forward = 0
 net.ipv4.icmp_echo_ignore_broadcasts = 1
 net.ipv4.icmp_ignore_bogus_error_responses = 1
 
-# Randomize kernel memory addresses
+# Randomize kernel memory addresses (ASLR)
+kernel.randomize_va_space = 2
+
+# Restrict kernel pointer exposure
 kernel.kptr_restrict = 2
+
+# Restrict kernel log access (prevention of info leaks)
+kernel.dmesg_restrict = 1
+
+# Restrict ptrace (prevent process inspection attacks)
+kernel.yama.ptrace_scope = 2
+
+# SYN Flood Protection
+net.ipv4.tcp_syncookies = 1
+
+# Reverse Path Filtering (Anti-Spoofing)
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.default.rp_filter = 1
 EOF
 
 	# Apply changes

@@ -120,3 +120,91 @@ run_lynis() {
 		sudo lynis audit system
 	fi
 }
+
+manage_auditd() {
+	log_info "=== System Auditing (Auditd) ==="
+	
+	# Determine package name (Debian/Ubuntu: auditd, Arch: audit)
+	local pkg="auditd"
+	if [[ "${PKG_MANAGER}" == "pacman" ]]; then
+		pkg="audit"
+	fi
+	
+	if install_tool_wrapper "auditctl" "${pkg}"; then
+		# Check for audispd-plugins on Debian/Ubuntu
+		if [[ "${PKG_MANAGER}" == "apt-get" ]]; then
+			log_info "Installing audispd-plugins..."
+			sudo apt-get install -y audispd-plugins >/dev/null 2>&1 || true
+		fi
+		
+		log_info "Configuring persistent audit rules..."
+		local rules_file="/etc/audit/rules.d/hardening.rules"
+		sudo mkdir -p /etc/audit/rules.d
+		
+		cat <<EOF | sudo tee "${rules_file}" >/dev/null
+# OneRun Hardening Rules
+# Buffer Size
+-b 16384
+
+# Failure Mode
+-f 1
+
+# Monitor Sudo execution
+-a always,exit -F arch=b64 -S execve -F uid>=1000 -F auid>=1000 -k sudo_exec
+
+# Monitor Critical Configuration Changes
+-w /etc/passwd -p wa -k passwd_changes
+-w /etc/shadow -p wa -k shadow_changes
+-w /etc/group -p wa -k group_changes
+-w /etc/sudoers -p wa -k sudoers_changes
+
+# Monitor Time Changes
+-a always,exit -F arch=b64 -S adjtimex -S settimeofday -k time_change
+
+# Monitor Network Modifications
+-a always,exit -F arch=b64 -S sethostname -S setdomainname -k network_modifications
+EOF
+		
+		log_info "Restarting auditd..."
+		# auditd often requires service restart, not just reload
+		if command -v systemctl &>/dev/null; then
+			sudo systemctl restart auditd
+			sudo systemctl enable auditd
+		else
+			sudo service auditd restart
+		fi
+		
+		# Load rules
+		if command -v augenrules &>/dev/null; then
+			sudo augenrules --load
+		fi
+		log_success "Auditd rules applied and active."
+		sudo auditctl -l | head -n 5
+	fi
+}
+
+manage_usbguard() {
+	log_info "=== USB Device Control (USBGuard) ==="
+	
+	if install_tool_wrapper "usbguard" "usbguard"; then
+		log_info "Generating initial USB policy (Allowing current devices)..."
+		
+		# CRITICAL: Generate policy BEFORE starting service to avoid lockout
+		if [[ ! -f /etc/usbguard/rules.conf ]] || [[ $(stat -c%s /etc/usbguard/rules.conf) -eq 0 ]]; then
+			sudo usbguard generate-policy | sudo tee /etc/usbguard/rules.conf >/dev/null
+			log_info "Generated whitelist for currently connected devices."
+		else
+			log_info "Policy file exists. Skipping generation to preserve custom rules."
+		fi
+		
+		# Enable Service
+		if command -v systemctl &>/dev/null; then
+			sudo systemctl enable --now usbguard
+		else
+			sudo service usbguard start
+		fi
+		
+		log_success "USBGuard is active. New USB devices will be blocked by default."
+		sudo usbguard list-devices
+	fi
+}

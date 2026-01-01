@@ -16,17 +16,41 @@ Use these prompts with Perplexity, ChatGPT, or other LLMs to find new features:
 
 ## Roadmap
 
-### v0.4 "Sentinel" (Proposed)
-Focus: **Access Control & Integrity**
-- [ ] **USBGuard Integration**:
-    - Detect current USB devices.
-    - Generate a whitelist policy (`usbguard generate-policy`).
-    - Install and enable `usbguard-daemon`.
-- [ ] **Advanced Auditd Rules**:
-    - Deploy the "Neo23x0/auditd" best-practice ruleset.
-    - Configure immutable audit rules (`-e 2`).
-- [ ] **File Integrity Monitoring (AIDE)**:
-    - Automate `aide --init` and daily checks.
+### v0.4 "Sentinel" (Detailed Specs)
+Based on `research.md`, this version focuses on **Audit**, **USB Control**, and **Extended Kernel Hardening**.
+
+#### 1. Advanced Kernel Hardening
+**Source**: `research.md` (Part IV)
+- **Action**: Extend `lib/hardening.sh` -> `apply_sysctl_hardening`.
+- **New Rules**:
+    - `kernel.randomize_va_space = 2` (ASLR)
+    - `kernel.kptr_restrict = 2` (Restrict pointer exposure)
+    - `kernel.dmesg_restrict = 1` (Restrict kernel log access)
+    - `kernel.yama.ptrace_scope = 2` (Restrict ptrace)
+    - `net.ipv4.tcp_syncookies = 1` (SYN flood protection)
+    - `net.ipv4.conf.all.rp_filter = 1` (Anti-spoofing)
+    - `net.ipv6.conf.all.forwarding = 0` (Disable IPv6 routing)
+
+#### 2. Auditd Integration
+**Source**: `research.md` (Part I, Section 2)
+- **Tool**: `auditd` + `audispd-plugins`
+- **Configuration**:
+    - Install `auditd`.
+    - Apply persistent rules in `/etc/audit/rules.d/hardening.rules`.
+    - **Key Rules**:
+        - Monitor `execve` (sudo execution).
+        - Monitor `/etc/passwd`, `/etc/shadow`, `/etc/group` changes.
+        - Monitor time changes and network modifications (`sethostname`).
+    - **Optimization**: Increase buffer size (`-b 16384`) to prevent lost events.
+
+#### 3. USBGuard Implementation
+**Source**: `research.md` (Part I, Section 3)
+- **Tool**: `usbguard`
+- **Workflow**:
+    - Install `usbguard`.
+    - Generate initial policy: `usbguard generate-policy > ...` (Allow current devices).
+    - Enable `usbguard-daemon`.
+    - **Safety**: Ensure input devices (keyboard/mouse) are whitelisted to prevent lockout.
 
 ### v0.5 "Aegis" (Proposed)
 Focus: **Application Confinement**
