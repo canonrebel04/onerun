@@ -158,6 +158,9 @@ manage_auditd() {
 		
 		cat <<EOF | sudo tee "${rules_file}" >/dev/null
 # OneRun Hardening Rules
+# Clear existing rules first to avoid duplication errors during reload
+-D
+
 # Buffer Size
 -b 16384
 
