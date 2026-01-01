@@ -40,6 +40,7 @@ security_tools_menu() {
 			"Deep Audit (Lynis)" \
 			"System Auditing (Auditd)" \
 			"USB Device Control (USBGuard)" \
+			"Application Confinement (AppArmor)" \
 			"Back"; do
 			
 			case ${opt} in
@@ -65,6 +66,10 @@ security_tools_menu() {
 				;;
 			"USB Device Control (USBGuard)")
 				manage_usbguard
+				break
+				;;
+			"Application Confinement (AppArmor)")
+				manage_apparmor
 				break
 				;;
 			"Back")

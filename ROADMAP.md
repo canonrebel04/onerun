@@ -52,17 +52,37 @@ Based on `research.md`, this version focuses on **Audit**, **USB Control**, and 
     - Enable `usbguard-daemon`.
     - **Safety**: Ensure input devices (keyboard/mouse) are whitelisted to prevent lockout.
 
-### v0.5 "Aegis" (Proposed)
-Focus: **Application Confinement**
-- [ ] **AppArmor/SELinux Automation**:
-    - Install default profiles.
-    - Set profiles to "complain" mode initially (safe learning).
-- [ ] **Systemd Sandboxing**:
-    - script to harden specific service units (e.g., `nginx`, `apache`) using `systemd-analyze security` suggestions.
+### v0.5 "Aegis" (AppArmor & Application Confinement)
+**Goal**: Restrict application capabilities and enforce Least Privilege.
 
-### v0.6 "Bastion" (Proposed)
-Focus: **Compliance & Reporting**
-- [ ] **CIS Benchmark Audit**:
-    - Automated check script against simplified CIS rules.
-- [ ] **HTML Report Generation**:
-    - Generate a consolidated dashboard of system security status.
+#### 1. AppArmor Automation
+**Source**: `research.md` (Automating AppArmor Script)
+- **Deployment Strategy**:
+    - **Install**: `apparmor`, `apparmor-utils`, `apparmor-profiles`, `auditd`.
+    - **Kernel Config**: Update GRUB (`GRUB_CMDLINE_LINUX_DEFAULT`) to add `lsm=landlock,lockdown,yama,integrity,apparmor,bpf`.
+    - **Bootloader**: Run `update-grub` or `grub-mkconfig`.
+    - **Safety**: Deploy all profiles in **Complain Mode** (`aa-complain /etc/apparmor.d/*`) initially.
+    - **Notifications**: Configure `aa-notify` for desktop alerts.
+
+#### 2. Systemd Sandboxing
+- **Objective**: Harden individual services without full MAC complexity.
+- **Controls**: `CapabilityBoundingSet`, `ProtectSystem`, `ProtectHome`, `PrivateNetwork`.
+
+### v0.6 "Compliance" (CIS Benchmarks & Lynis Enhancement)
+**Goal**: Automate Level 1 CIS Benchmark recommendations and improve Lynis audit scores.
+
+#### 1. CIS Level 1 Automation (Safe)
+**Source**: `research.md` - Section I
+- [ ] **Filesystem Hardening**: Disable unused modules (cramfs, hfs, hfsplus, squashfs, udf).
+- [ ] **Network Hardening**: Implement remaining CIS Level 1 sysctl parameters (ICMP redirects, martians, etc.).
+- [ ] **Permissions Enforcement**: Correct permissions for `/etc/passwd(-)`, `/etc/shadow(-)`, `/etc/group(-)`.
+
+#### 2. Compliance Scanning & Reporting
+- [ ] **OpenSCAP Integration**: Automated scans using `cis_level1_server` profile.
+- [ ] **Lynis Optimization**: Remediation for common warnings (SSL, SSH, Permissions).
+- [ ] **OneRun Compliance Report**: Aggregate findings into a consolidated summary.
+
+#### 3. Intrusion Detection & FIM
+- **Tool**: **Wazuh Agent** (Optional Integration).
+- **Feature**: File Integrity Monitoring (FIM) for `/etc`, `/usr/bin`.
+- **Refinement**: Integrate Wazuh agent installation for centralized monitoring.
